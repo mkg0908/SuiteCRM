@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CaseStatus {
+  Open_New         @map("Open_New")
+  Open_Assigned    @map("Open_Assigned")
+  Open_Pending_Input @map("Open_Pending Input")
+  Closed_Closed    @map("Closed_Closed")
+  Closed_Rejected  @map("Closed_Rejected")
+  Closed_Duplicate @map("Closed_Duplicate")
+}
+
+enum CasePriority {
+  P1
+  P2
+  P3
+}
+
+enum CaseState {
+  Open
+  Closed
+}
+
+enum CaseChannel {
+  Email
+  WhatsApp
+  Phone
+  Portal
+  Manual
+}
+
+model Case {
+  id               String      @id @default(uuid())
+  caseNumber       String      @unique @map("case_number")
+  subject          String
+  description      String?
+  priority         CasePriority
+  status           CaseStatus
+  state            CaseState
+  type             String?
+  channel          CaseChannel @default(Manual)
+  category         String?
+  resolution       String?
+  dateCreated      DateTime    @default(now()) @map("date_created")
+  dateModified     DateTime    @updatedAt @map("date_modified")
+  slaDueAt         DateTime?   @map("sla_due_at")
+  firstResponseAt  DateTime?   @map("first_response_at")
+  isAtRisk         Boolean     @default(false) @map("is_at_risk")
+  isBreached       Boolean     @default(false) @map("is_breached")
+  duplicateOf      String?     @map("duplicate_of")
+  customerEmail    String?     @map("customer_email")
+  customerPhone    String?     @map("customer_phone")
+  normalizedSubject String?    @map("normalized_subject")
+  displaySequence  Int         @default(autoincrement()) @map("display_sequence")
+
+  accountId        String?     @map("account_id")
+  assignedUserId   String?     @map("assigned_user_id")
+
+  account          AccountRef? @relation(fields: [accountId], references: [id])
+  assignedAgent    AgentRef?   @relation(fields: [assignedUserId], references: [id])
+  updates          CaseUpdate[]
+  auditEvents      AuditEvent[]
+  intakeMessages   IntakeMessage[]
+
+  @@index([status, dateModified])
+  @@index([assignedUserId, status])
+  @@index([customerEmail, normalizedSubject, dateCreated])
+  @@index([slaDueAt, isBreached, isAtRisk])
+  @@index([channel])
+  @@index([category])
+  @@map("cases")
+}
+
+model CaseUpdate {
+  id        String   @id @default(uuid())
+  caseId    String   @map("case_id")
+  author    String
+  text      String
+  timestamp DateTime @default(now())
+  internal  Boolean  @default(false)
+
+  case      Case     @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+  @@map("case_updates")
+}
+
+model AuditEvent {
+  id        String   @id @default(uuid())
+  caseId    String   @map("case_id")
+  userId    String   @map("user_id")
+  timestamp DateTime @default(now())
+  field     String
+  oldValue  String?  @map("old_value")
+  newValue  String?  @map("new_value")
+  action    String
+
+  case      Case     @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+  @@map("audit_events")
+}
+
+model AccountRef {
+  id      String  @id @default(uuid())
+  name    String
+  domain  String?
+
+  cases   Case[]
+
+  @@map("account_refs")
+}
+
+model AgentRef {
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  phone    String?
+  isActive Boolean @default(true) @map("is_active")
+
+  cases    Case[]
+
+  @@map("agent_refs")
+}
+
+model IntakeMessage {
+  id          String      @id @default(uuid())
+  caseId      String?     @map("case_id")
+  channel     CaseChannel
+  rawContent  String      @map("raw_content")
+  sender      String?
+  processedAt DateTime    @default(now()) @map("processed_at")
+  status      String      @default("processed")
+
+  case        Case?       @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+  @@map("intake_messages")
+}
+
+model Session {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+
+  @@index([expire])
+  @@map("sessions")
+}
+
+model ImportValidation {
+  id          String   @id @default(uuid())
+  importedAt  DateTime @default(now()) @map("imported_at")
+  totalRows   Int      @map("total_rows")
+  statusCounts Json    @map("status_counts")
+  isValid     Boolean  @map("is_valid")
+  errors      Json     @default("[]")
+
+  @@map("import_validations")
+}

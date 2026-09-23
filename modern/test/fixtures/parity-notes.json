@@ -1,0 +1,46 @@
+{
+  "source": "modules/AOP_Case_Updates/CaseUpdatesHook.php",
+  "preservedFields": {
+    "author": {
+      "legacyField": "assigned_user_id",
+      "description": "The user who created the case update, mapped to current_user->id in PHP"
+    },
+    "text": {
+      "legacyFields": ["name", "description"],
+      "description": "The update content; legacy stores truncated slug in name (50 chars) and full HTML in description"
+    },
+    "timestamp": {
+      "legacyField": "date_entered",
+      "description": "Auto-set by SugarBean save; in CaseFlow this is the datetime field on CaseUpdate"
+    },
+    "internal": {
+      "legacyField": "internal",
+      "description": "Boolean flag controlling email notification suppression; internal=true skips contact email"
+    }
+  },
+  "preservedStatuses": [
+    "Open_New",
+    "Open_Assigned",
+    "Open_Pending Input",
+    "Closed_Closed",
+    "Closed_Rejected",
+    "Closed_Duplicate"
+  ],
+  "legacyDefect": {
+    "description": "35 legacy cases have Closed_* status but state=Open in the SuiteCRM database",
+    "correction": "CaseFlow derives state from status on import and every write path, making this defect impossible"
+  },
+  "allowedTransitions": {
+    "Open_New": ["Open_Assigned", "Closed_Rejected"],
+    "Open_Assigned": ["Open_Pending Input", "Closed_Closed", "Closed_Rejected", "Closed_Duplicate"],
+    "Open_Pending Input": ["Open_Assigned", "Closed_Closed", "Closed_Rejected"],
+    "Closed_Closed": [],
+    "Closed_Rejected": [],
+    "Closed_Duplicate": []
+  },
+  "rejectedTransition": {
+    "example": "Open_New -> Open_Pending Input",
+    "httpStatus": 409,
+    "errorCode": "transition_conflict"
+  }
+}

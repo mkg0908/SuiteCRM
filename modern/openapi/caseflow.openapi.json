@@ -1,0 +1,12 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CaseFlow API",
+    "version": "1.0.0",
+    "description": "CaseFlow support desk REST API - run npm run openapi:generate to update"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {}
+  }
+}
