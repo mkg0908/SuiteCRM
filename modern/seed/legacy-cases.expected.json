@@ -1,0 +1,13 @@
+{
+  "totalRows": 50,
+  "statusCounts": {
+    "Open_New": 5,
+    "Open_Assigned": 5,
+    "Open_Pending Input": 5,
+    "Closed_Closed": 20,
+    "Closed_Rejected": 8,
+    "Closed_Duplicate": 7
+  },
+  "legacyDefectCount": 35,
+  "description": "35 cases have Closed_* status with legacy state=Open - CaseFlow corrects this by deriving state from status"
+}

@@ -126,3 +126,5 @@ codeception.yml
 .env
 .env.test
 .env.dev
+.claude/
+CLAUDE.md
