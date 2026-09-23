@@ -1,0 +1,14 @@
+{
+  "totalCases": 50,
+  "statusCounts": {
+    "Open_New": 5,
+    "Open_Assigned": 7,
+    "Open_Pending Input": 3,
+    "Closed_Closed": 20,
+    "Closed_Rejected": 8,
+    "Closed_Duplicate": 7
+  },
+  "knownDefects": {
+    "closedStatusOpenState": 35
+  }
+}

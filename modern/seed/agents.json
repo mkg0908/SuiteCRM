@@ -1,0 +1,6 @@
+[
+  { "name": "Alice Chen", "email": "alice.chen@support.caseflow.dev", "isActive": true },
+  { "name": "Bob Martinez", "email": "bob.martinez@support.caseflow.dev", "isActive": true },
+  { "name": "Carol Okafor", "email": "carol.okafor@support.caseflow.dev", "isActive": true },
+  { "name": "Dave Singh", "email": "dave.singh@support.caseflow.dev", "isActive": false }
+]

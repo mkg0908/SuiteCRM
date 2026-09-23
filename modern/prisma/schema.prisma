@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Case {
+  id               String    @id @default(uuid())
+  caseNumber       String    @unique
+  subject          String
+  description      String?
+  priority         String
+  status           String
+  state            String
+  type             String?
+  channel          String?
+  category         String?
+  accountId        String?
+  assignedUserId   String?
+  resolution       String?
+  customerEmail    String?
+  customerPhone    String?
+  normalizedSubject String?
+  duplicateOf      String?
+  slaDueAt         DateTime?
+  firstResponseAt  DateTime?
+  isAtRisk         Boolean   @default(false)
+  isBreached       Boolean   @default(false)
+  dateCreated      DateTime  @default(now())
+  dateModified     DateTime  @updatedAt
+
+  updates        CaseUpdate[]
+  auditEvents    AuditEvent[]
+  intakeMessages IntakeMessage[]
+  account        AccountRef?  @relation(fields: [accountId], references: [id])
+  assignedUser   AgentRef?    @relation(fields: [assignedUserId], references: [id])
+
+  @@index([status, dateModified])
+  @@index([assignedUserId, status])
+  @@index([customerEmail, normalizedSubject, dateCreated])
+  @@index([slaDueAt, isAtRisk])
+  @@index([channel])
+  @@index([category])
+}
+
+model CaseUpdate {
+  id        String   @id @default(uuid())
+  caseId    String
+  author    String
+  text      String
+  internal  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+}
+
+model AuditEvent {
+  id        String   @id @default(uuid())
+  caseId    String
+  user      String
+  field     String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+}
+
+model AccountRef {
+  id    String @id @default(uuid())
+  name  String
+  cases Case[]
+}
+
+model AgentRef {
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  isActive Boolean @default(true)
+  cases    Case[]
+}
+
+model IntakeMessage {
+  id             String   @id @default(uuid())
+  caseId         String?
+  source         String
+  sender         String?
+  subject        String?
+  body           String?
+  classification String?
+  rawTimestamp    String?
+  createdAt      DateTime @default(now())
+
+  case Case? @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+}
+
+model Session {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+
+  @@index([expire])
+}

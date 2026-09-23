@@ -1,0 +1,17 @@
+{
+  "threadedUpdateFields": {
+    "author": "assigned_user_id of the update creator",
+    "text": "description field (nl2br converted)",
+    "timestamp": "date_entered / created_at",
+    "internalFlag": "internal boolean - when true, no customer notification sent"
+  },
+  "statusDerivation": {
+    "method": "Split status on underscore, first segment is state",
+    "example": "Closed_Rejected -> state=Closed, label=Rejected",
+    "legacyCode": "explode('_', $case->status); $case->state = array_shift($statusBits);"
+  },
+  "autoAssignment": {
+    "trigger": "New case without assigned_user_id",
+    "method": "AOPAssignManager::getNextAssignedUser()"
+  }
+}
