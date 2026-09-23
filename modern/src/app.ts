@@ -10,6 +10,7 @@ import { caseRouter } from './routes/caseRoutes.js';
 import { intakeRouter } from './routes/intakeRoutes.js';
 import { dashboardRouter } from './routes/dashboardRoutes.js';
 import { openapiRouter } from './routes/openapiRoutes.js';
+import { demoRouter } from './routes/demoRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,12 +37,21 @@ export function createApp() {
     }),
   );
 
-  app.use('/', healthzRouter);
-  app.use('/api/caseflow/session', sessionRouter);
-  app.use('/api/caseflow/cases', caseRouter);
-  app.use('/api/caseflow/intake', intakeRouter);
-  app.use('/api/caseflow/dashboard', dashboardRouter);
-  app.use('/api/caseflow', openapiRouter);
+  const useDemoMode = !process.env.DATABASE_URL;
+
+  if (useDemoMode) {
+    // Demo mode: in-memory data, no database required
+    app.get('/healthz', (_req, res) => res.json({ status: 'ok', mode: 'demo' }));
+    app.use('/api/caseflow', demoRouter);
+  } else {
+    // Production mode: PostgreSQL via Prisma
+    app.use('/', healthzRouter);
+    app.use('/api/caseflow/session', sessionRouter);
+    app.use('/api/caseflow/cases', caseRouter);
+    app.use('/api/caseflow/intake', intakeRouter);
+    app.use('/api/caseflow/dashboard', dashboardRouter);
+    app.use('/api/caseflow', openapiRouter);
+  }
 
   const publicPath = path.join(__dirname, '../public');
   app.use(express.static(publicPath));
